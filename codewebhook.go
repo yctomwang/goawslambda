@@ -33,12 +33,15 @@ func HandleRequest(ctx context.Context, req Request) (string, error) {
 		return "", fmt.Errorf("error marshalling request: %v", err)
 	}
 	messageGroupId := "Group-" + time.Now().Format("20060102150405")
+	messageDeduplicationId := "Dedup-" + time.Now().Format("20060102150405.000")
+
 	// Send message to SQS queue
 	_, err = svc.SendMessage(&sqs.SendMessageInput{
-		DelaySeconds:   aws.Int64(10),
-		MessageBody:    aws.String(string(reqJSON)),
-		QueueUrl:       &queueURL,
-		MessageGroupId: aws.String(messageGroupId), // Use the unique MessageGroupId
+		DelaySeconds:           aws.Int64(10),
+		MessageBody:            aws.String(string(reqJSON)),
+		QueueUrl:               &queueURL,
+		MessageGroupId:         aws.String(messageGroupId),         // Use the unique MessageGroupId
+		MessageDeduplicationId: aws.String(messageDeduplicationId), // Provide unique MessageDeduplicationId
 	})
 
 	if err != nil {
