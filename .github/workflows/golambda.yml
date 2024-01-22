@@ -18,7 +18,7 @@ jobs:
 
       - name: Build and Zip the Lambda function
         run: |
-          GOOS=linux GOARCH=amd64 go build -o ./tmp/main main
+          GOOS=linux GOARCH=amd64 go build -o ./tmp/main codewebhook.go
           zip -j ./tmp/main.zip ./tmp/main
 
       - name: Configure AWS credentials
