@@ -78,4 +78,4 @@ jobs:
       - name: Create Lambda function if it doesn't exist
         if: env.LAMBDA_EXISTS == 'false'
         run: |
-          aws lambda create-function --function-name TestFunctionForBlog --runtime go1.x --role [YOUR_LAMBDA_ROLE_ARN] --handler main --zip-file fileb://./tmp/main.zip
+          aws lambda create-function --function-name TestFunctionForBlog --runtime go1.x --role ${{ secrets.LAMBDA_ROLE_ARN }} --handler main --zip-file fileb://./tmp/main.zip
