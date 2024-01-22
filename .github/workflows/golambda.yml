@@ -1,3 +1,36 @@
+#name: Deploy Lambda Function
+#
+#on:
+#  push:
+#    branches: [ main ]
+#
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - name: Set up Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: '1.x'
+#
+#      - name: Build and Zip the Lambda function
+#        run: |
+#          GOOS=linux GOARCH=amd64 go build -o ./tmp/main codewebhook.go
+#          zip -j ./tmp/main.zip ./tmp/main
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ap-southeast-2
+#
+#      - name: Update Lambda function code
+#        run: aws lambda update-function-code --function-name TestFunctionForBlog --region us-east-2 --zip-file fileb://./tmp/main.zip
+
 name: Deploy Lambda Function
 
 on:
@@ -26,7 +59,23 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
+          aws-region: ap-southeast-2
 
-      - name: Update Lambda function code
-        run: aws lambda update-function-code --function-name TestFunctionForBlog --region us-east-2 --zip-file fileb://./tmp/main.zip
+      - name: Check if Lambda function exists
+        id: check_lambda
+        run: |
+          if aws lambda get-function --function-name TestFunctionForBlog; then
+            echo "LAMBDA_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "LAMBDA_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Update Lambda function if it exists
+        if: env.LAMBDA_EXISTS == 'true'
+        run: |
+          aws lambda update-function-code --function-name TestFunctionForBlog --zip-file fileb://./tmp/main.zip
+
+      - name: Create Lambda function if it doesn't exist
+        if: env.LAMBDA_EXISTS == 'false'
+        run: |
+          aws lambda create-function --function-name TestFunctionForBlog --runtime go1.x --role [YOUR_LAMBDA_ROLE_ARN] --handler main --zip-file fileb://./tmp/main.zip
