@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"time"
 )
 
 // Request is the structure of the lambda input
@@ -16,8 +17,6 @@ type Request struct {
 }
 
 func HandleRequest(ctx context.Context, req Request) (string, error) {
-	// Initialize a session in us-west-2 that the SDK will use to load
-	// credentials from the shared credentials file ~/.aws/credentials.
 	sess, _ := session.NewSession(&aws.Config{
 		Region: aws.String("ap-southeast-2")},
 	)
@@ -33,12 +32,13 @@ func HandleRequest(ctx context.Context, req Request) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error marshalling request: %v", err)
 	}
-
+	messageGroupId := "Group-" + time.Now().Format("20060102150405")
 	// Send message to SQS queue
 	_, err = svc.SendMessage(&sqs.SendMessageInput{
-		DelaySeconds: aws.Int64(10),
-		MessageBody:  aws.String(string(reqJSON)),
-		QueueUrl:     &queueURL,
+		DelaySeconds:   aws.Int64(10),
+		MessageBody:    aws.String(string(reqJSON)),
+		QueueUrl:       &queueURL,
+		MessageGroupId: aws.String(messageGroupId), // Use the unique MessageGroupId
 	})
 
 	if err != nil {
