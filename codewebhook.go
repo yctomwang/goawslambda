@@ -37,7 +37,6 @@ func HandleRequest(ctx context.Context, req Request) (string, error) {
 
 	// Send message to SQS queue
 	_, err = svc.SendMessage(&sqs.SendMessageInput{
-		DelaySeconds:           aws.Int64(10),
 		MessageBody:            aws.String(string(reqJSON)),
 		QueueUrl:               &queueURL,
 		MessageGroupId:         aws.String(messageGroupId),         // Use the unique MessageGroupId
