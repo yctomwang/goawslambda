@@ -64,7 +64,7 @@ jobs:
       - name: Check if Lambda function exists
         id: check_lambda
         run: |
-          if aws lambda get-function --function-name TestFunctionForBlog; then
+          if aws lambda get-function --function-name golangleetcodewebhook; then
             echo "LAMBDA_EXISTS=true" >> $GITHUB_ENV
           else
             echo "LAMBDA_EXISTS=false" >> $GITHUB_ENV
@@ -73,9 +73,9 @@ jobs:
       - name: Update Lambda function if it exists
         if: env.LAMBDA_EXISTS == 'true'
         run: |
-          aws lambda update-function-code --function-name TestFunctionForBlog --zip-file fileb://./tmp/main.zip
+          aws lambda update-function-code --function-name golangleetcodewebhook --zip-file fileb://./tmp/main.zip
 
       - name: Create Lambda function if it doesn't exist
         if: env.LAMBDA_EXISTS == 'false'
         run: |
-          aws lambda create-function --function-name TestFunctionForBlog --runtime go1.x --role ${{ secrets.LAMBDA_ROLE_ARN }} --handler main --zip-file fileb://./tmp/main.zip
+          aws lambda create-function --function-name golangleetcodewebhook --runtime go1.x --role ${{ secrets.LAMBDA_ROLE_ARN }} --handler main --zip-file fileb://./tmp/main.zip
